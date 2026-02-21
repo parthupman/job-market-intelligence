@@ -4,28 +4,21 @@ CREATE SCHEMA IF NOT EXISTS staging;
 CREATE SCHEMA IF NOT EXISTS intermediate;
 CREATE SCHEMA IF NOT EXISTS marts;
 
--- Create user and grant privileges
--- Note: In production, use more restrictive permissions
-DO
-$do$
-BEGIN
-   IF NOT EXISTS (
-      SELECT FROM pg_catalog.pg_roles
-      WHERE  rolname = 'jobmarket') THEN
-      CREATE ROLE jobmarket LOGIN PASSWORD 'testpass';
-   END IF;
-END
-$do$;
-
-GRANT ALL PRIVILEGES ON DATABASE job_market TO jobmarket;
-GRANT ALL PRIVILEGES ON SCHEMA raw TO jobmarket;
-GRANT ALL PRIVILEGES ON SCHEMA staging TO jobmarket;
-GRANT ALL PRIVILEGES ON SCHEMA intermediate TO jobmarket;
-GRANT ALL PRIVILEGES ON SCHEMA marts TO jobmarket;
-
--- Optional: Create a specific role for dbt if needed later
--- CREATE ROLE dbt_user LOGIN PASSWORD 'dbt_pass';
--- GRANT USAGE ON SCHEMA raw TO dbt_user;
--- GRANT ALL PRIVILEGES ON SCHEMA staging TO dbt_user;
--- GRANT ALL PRIVILEGES ON SCHEMA intermediate TO dbt_user;
--- GRANT ALL PRIVILEGES ON SCHEMA marts TO dbt_user;
+-- The raw table is populated by pandas, but we can define it here if we want strict typing
+-- CREATE TABLE IF NOT EXISTS raw.raw_job_postings (
+--    source VARCHAR(50),
+--    source_id VARCHAR(255),
+--    title VARCHAR(500),
+--    company VARCHAR(500),
+--    location VARCHAR(500),
+--    salary_min NUMERIC,
+--    salary_max NUMERIC,
+--    salary_currency VARCHAR(10),
+--    description TEXT,
+--    url TEXT,
+--    posted_date TIMESTAMP,
+--    extracted_at TIMESTAMP,
+--    raw_data JSONB,
+--    extraction_date DATE,
+--    extraction_id VARCHAR(50)
+-- );

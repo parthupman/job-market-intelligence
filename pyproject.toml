@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "job-market-intelligence"
+version = "0.1.0"
+description = "Production-grade job market intelligence pipeline"
+authors = [
+  { name="Parth Upman", email="PARTHUPMAN@gmail.com" }
+]
+readme = "README.md"
+requires-python = ">=3.10"
+
+dependencies = [
+    "requests",
+    "tenacity",
+    "pandas",
+    "sqlalchemy",
+    "psycopg2-binary",
+    "apache-airflow",
+    "apache-airflow-providers-slack",
+    "dbt-core",
+    "dbt-postgres",
+    "great-expectations",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-cov",
+    "sqlfluff"
+]
+
+[tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+
+[tool.sqlfluff.core]
+dialect = "postgres"
+exclude_rules = "L031,L034"

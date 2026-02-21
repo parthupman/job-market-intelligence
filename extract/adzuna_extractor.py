@@ -1,7 +1,7 @@
 import os
 from datetime import datetime
 from typing import List, Dict, Optional
-from base_extractor import BaseExtractor, JobPosting
+from extract.base_extractor import BaseExtractor, JobPosting
 
 
 class AdzunaExtractor(BaseExtractor):

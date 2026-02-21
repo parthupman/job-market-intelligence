@@ -1,6 +1,6 @@
 from datetime import datetime
 from typing import List, Dict
-from base_extractor import BaseExtractor, JobPosting
+from extract.base_extractor import BaseExtractor, JobPosting
 
 
 class TheMuseExtractor(BaseExtractor):

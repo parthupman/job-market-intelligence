@@ -17,7 +17,7 @@ cleaned AS (
         
         -- Salary
         CASE 
-            WHEN salary_min < 1000 THEN salary_min * 2080  -- Hourly to annual
+            WHEN salary_min < 1000 THEN salary_min * 2080
             ELSE salary_min 
         END AS salary_min_annual,
         CASE 

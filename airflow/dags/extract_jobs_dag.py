@@ -2,6 +2,7 @@ from datetime import datetime, timedelta
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.operators.bash import BashOperator
+from airflow.providers.slack.operators.slack_webhook import SlackWebhookOperator
 from airflow.utils.dates import days_ago
 
 # Default args
@@ -9,9 +10,9 @@ default_args = {
     "owner": "data-team",
     "depends_on_past": False,
     "email": ["data-alerts@company.com"],
-    "email_on_failure": False,
+    "email_on_failure": True,
     "email_on_retry": False,
-    "retries": 1,
+    "retries": 2,
     "retry_delay": timedelta(minutes=5),
 }
 
@@ -29,11 +30,7 @@ dag = DAG(
 
 # Task 1: Extract data from APIs
 def extract_jobs():
-    import sys
-    import os
-    # Add the extract directory to path so we can import from it
-    sys.path.append(os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), 'extract'))
-    from run_extraction import run_full_extraction
+    from extract.run_extraction import run_full_extraction
     
     df = run_full_extraction(
         search_terms=[
@@ -42,8 +39,7 @@ def extract_jobs():
             "data scientist",
             "analytics engineer"
         ],
-        output_to_db=True,
-        output_to_csv=False
+        output_to_db=True
     )
     
     return {"rows_extracted": len(df)}
@@ -56,7 +52,7 @@ extract_task = PythonOperator(
 )
 
 
-# Task 2: Run dbt models (will be active after dbt is configured)
+# Task 2: Run dbt models
 dbt_run = BashOperator(
     task_id="dbt_run",
     bash_command="""
@@ -67,7 +63,7 @@ dbt_run = BashOperator(
 )
 
 
-# Task 3: Run dbt tests (will be active after dbt is configured)
+# Task 3: Run dbt tests
 dbt_test = BashOperator(
     task_id="dbt_test",
     bash_command="""
@@ -77,6 +73,41 @@ dbt_test = BashOperator(
     dag=dag,
 )
 
+
+# Task 4: Run Great Expectations
+def run_data_quality():
+    import great_expectations as gx
+    
+    context = gx.get_context(context_root_dir="/opt/airflow/quality/great_expectations")
+    result = context.run_checkpoint(checkpoint_name="daily_validation")
+    
+    if not result.success:
+        raise Exception("Data quality checks failed!")
+    
+    return {"status": "passed"}
+
+
+quality_check = PythonOperator(
+    task_id="data_quality_check",
+    python_callable=run_data_quality,
+    dag=dag,
+)
+
+
+# Task 5: Slack notification on success
+slack_success = SlackWebhookOperator(
+    task_id="slack_success",
+    slack_webhook_conn_id="slack_webhook",
+    message="""
+        ✅ Job Market Pipeline Success!
+        
+        📊 Daily extraction complete
+        🧪 All data quality checks passed
+        📈 Dashboard updated
+    """,
+    dag=dag,
+)
+
+
 # Task dependencies
-# Un-comment dbt tasks once dbt is set up
-extract_task # >> dbt_run >> dbt_test
+extract_task >> dbt_run >> dbt_test >> quality_check >> slack_success

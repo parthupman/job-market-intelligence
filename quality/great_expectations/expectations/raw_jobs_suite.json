@@ -1,0 +1,48 @@
+{
+  "expectation_suite_name": "raw_jobs_suite",
+  "expectations": [
+    {
+      "expectation_type": "expect_table_row_count_to_be_between",
+      "kwargs": {
+        "min_value": 100,
+        "max_value": 10000
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "job_title"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_not_be_null",
+      "kwargs": {
+        "column": "source"
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_in_set",
+      "kwargs": {
+        "column": "source",
+        "value_set": ["adzuna", "remoteok", "themuse"]
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_be_between",
+      "kwargs": {
+        "column": "salary_min",
+        "min_value": 0,
+        "max_value": 1000000,
+        "mostly": 0.95
+      }
+    },
+    {
+      "expectation_type": "expect_column_values_to_match_regex",
+      "kwargs": {
+        "column": "url",
+        "regex": "^https?://",
+        "mostly": 0.99
+      }
+    }
+  ]
+}
