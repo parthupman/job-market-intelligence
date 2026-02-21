@@ -1,0 +1,52 @@
+name: CI Pipeline
+
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: testpass
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+      
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install pytest pytest-cov
+      
+      - name: Run Python tests
+        run: pytest tests/ -v --cov=extract
+      
+      - name: Install dbt
+        run: pip install dbt-postgres
+      
+      - name: Run dbt tests
+        run: |
+          cd dbt_project
+          dbt deps
+          dbt compile --profiles-dir .
+      
+      - name: Lint SQL
+        run: |
+          pip install sqlfluff
+          sqlfluff lint dbt_project/models/

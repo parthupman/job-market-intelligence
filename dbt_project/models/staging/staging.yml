@@ -1,0 +1,57 @@
+version: 2
+
+models:
+  - name: stg_adzuna_jobs
+    description: "Staged and cleaned Adzuna job postings"
+    columns:
+      - name: job_key
+        description: "Surrogate key for job"
+        tests:
+          - unique
+          - not_null
+      - name: job_title
+        tests:
+          - not_null
+      - name: salary_min_annual
+      - name: posted_date
+        tests:
+          - not_null
+
+  - name: stg_remoteok_jobs
+    description: "Staged and cleaned RemoteOK job postings"
+    columns:
+      - name: job_key
+        description: "Surrogate key for job"
+        tests:
+          - unique
+          - not_null
+      - name: job_title
+        tests:
+          - not_null
+      - name: posted_date
+        tests:
+          - not_null
+
+  - name: stg_themuse_jobs
+    description: "Staged and cleaned The Muse job postings"
+    columns:
+      - name: job_key
+        description: "Surrogate key for job"
+        tests:
+          - unique
+          - not_null
+      - name: job_title
+        tests:
+          - not_null
+      - name: posted_date
+        tests:
+          - not_null
+
+sources:
+  - name: raw
+    schema: raw
+    tables:
+      - name: raw_job_postings
+        freshness:
+          warn_after: {count: 24, period: hour}
+          error_after: {count: 48, period: hour}

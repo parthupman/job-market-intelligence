@@ -1,0 +1,66 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: jobmarket
+      POSTGRES_PASSWORD: testpass
+      POSTGRES_DB: job_market
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/setup_database.sql:/docker-entrypoint-initdb.d/init.sql
+
+  airflow-webserver:
+    image: apache/airflow:2.7.0
+    depends_on:
+      - postgres
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://jobmarket:testpass@postgres/job_market
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+      _AIRFLOW_DB_UPGRADE: 'true'
+      _AIRFLOW_WWW_USER_CREATE: 'true'
+      _AIRFLOW_WWW_USER_USERNAME: admin
+      _AIRFLOW_WWW_USER_PASSWORD: admin
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./extract:/opt/airflow/extract
+      - ./dbt_project:/opt/dbt_project
+    command: webserver
+
+  airflow-scheduler:
+    image: apache/airflow:2.7.0
+    depends_on:
+      - postgres
+      - airflow-webserver
+    environment:
+      AIRFLOW__CORE__EXECUTOR: LocalExecutor
+      AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://jobmarket:testpass@postgres/job_market
+      AIRFLOW__CORE__LOAD_EXAMPLES: 'false'
+    volumes:
+      - ./airflow/dags:/opt/airflow/dags
+      - ./extract:/opt/airflow/extract
+      - ./dbt_project:/opt/dbt_project
+    command: scheduler
+
+  metabase:
+    image: metabase/metabase:latest
+    ports:
+      - "3000:3000"
+    environment:
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: job_market
+      MB_DB_PORT: 5432
+      MB_DB_USER: jobmarket
+      MB_DB_PASS: testpass
+      MB_DB_HOST: postgres
+    depends_on:
+      - postgres
+
+volumes:
+  postgres_data:

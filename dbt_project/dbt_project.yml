@@ -1,0 +1,30 @@
+name: 'job_market_intelligence'
+version: '1.0.0'
+config-version: 2
+
+profile: 'job_market'
+
+model-paths: ["models"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+target-path: "target"
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  job_market_intelligence:
+    staging:
+      +materialized: view
+      +schema: staging
+    intermediate:
+      +materialized: ephemeral
+    marts:
+      +materialized: table
+      +schema: marts
+
+vars:
+  extraction_lookback_days: 7
