@@ -1,0 +1,36 @@
+services:
+  # 1. PostgreSQL Database
+  - type: psql
+    name: job-market-db
+    plan: free
+    ipAllowList: []
+    
+  # 2. Extract & Transform Cron Job (Airflow alternative for free tier)
+  - type: cron
+    name: job-market-pipeline
+    env: python
+    schedule: "0 6 * * *"
+    buildCommand: "pip install -r requirements.txt; python -m pip install dbt-postgres"
+    startCommand: "python extract/run_extraction.py && cd dbt_project && dbt run && dbt test"
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: job-market-db
+          property: connectionString
+      - key: ADZUNA_APP_ID
+        sync: false
+      - key: ADZUNA_APP_KEY
+        sync: false
+
+  # 3. Streamlit Web Service
+  - type: web
+    name: job-market-dashboard
+    env: docker
+    plan: free
+    branch: main
+    repo: https://github.com/PARTHUPMAN/job-market-intelligence # Optional if linking via Render UI
+    envVars:
+      - key: DATABASE_URL
+        fromDatabase:
+          name: job-market-db
+          property: connectionString

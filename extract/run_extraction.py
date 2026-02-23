@@ -107,5 +107,5 @@ def _save_to_database(df: pd.DataFrame):
 
 
 if __name__ == "__main__":
-    df = run_full_extraction(output_to_db=True, output_to_csv=True)
+    df = run_full_extraction(output_to_db=False, output_to_csv=True)
     print(df.head())
