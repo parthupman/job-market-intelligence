@@ -1,9 +1,9 @@
-services:
-  # 1. PostgreSQL Database
-  - type: psql
-    name: job-market-db
+databases:
+  - name: job-market-db
     plan: free
     ipAllowList: []
+
+services:
     
   # 2. Extract & Transform Cron Job (Airflow alternative for free tier)
   - type: cron
