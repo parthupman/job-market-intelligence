@@ -1,36 +1,11 @@
-databases:
-  - name: job-market-db
-    plan: free
-    ipAllowList: []
-
 services:
-    
-  # 2. Extract & Transform Cron Job (Airflow alternative for free tier)
-  - type: cron
-    name: job-market-pipeline
-    env: python
-    schedule: "0 6 * * *"
-    buildCommand: "pip install -r requirements.txt; python -m pip install dbt-postgres"
-    startCommand: "python extract/run_extraction.py && cd dbt_project && dbt run && dbt test && cd .. && python scripts/predict_salaries.py"
-    envVars:
-      - key: DATABASE_URL
-        fromDatabase:
-          name: job-market-db
-          property: connectionString
-      - key: ADZUNA_APP_ID
-        sync: false
-      - key: ADZUNA_APP_KEY
-        sync: false
-
-  # 3. Streamlit Web Service
+  # Streamlit Web Service
   - type: web
     name: job-market-dashboard
     env: docker
     plan: free
     branch: main
-    repo: https://github.com/PARTHUPMAN/job-market-intelligence # Optional if linking via Render UI
+    repo: https://github.com/PARTHUPMAN/job-market-intelligence
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: job-market-db
-          property: connectionString
+        sync: false # Set this manually in Render Dashboard once you get it from Neon!

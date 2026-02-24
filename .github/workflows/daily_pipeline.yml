@@ -1,0 +1,42 @@
+name: Daily Job Market Pipeline
+
+on:
+  schedule:
+    - cron: '0 6 * * *' # 6:00 AM UTC daily
+  workflow_dispatch: # Allows manual trigger
+
+jobs:
+  run_pipeline:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+          
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+          pip install dbt-postgres
+          
+      - name: Run Extraction
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python extract/run_extraction.py
+        
+      - name: Run dbt Transformations
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: |
+          cd dbt_project
+          dbt deps
+          dbt run --profiles-dir .
+          dbt test --profiles-dir .
+          
+      - name: Run ML Salary Predictions
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python scripts/predict_salaries.py
