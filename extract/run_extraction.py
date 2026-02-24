@@ -92,7 +92,15 @@ def _save_to_database(df: pd.DataFrame):
         "postgresql://jobmarket:your_password_here@localhost:5432/job_market"
     )
     
+    # Render postgres URLs sometimes start with postgres:// but sqlalchemy needs postgresql://
+    if database_url.startswith("postgres://"):
+        database_url = database_url.replace("postgres://", "postgresql://", 1)
+        
     engine = create_engine(database_url)
+    
+    from sqlalchemy import text
+    with engine.begin() as conn:
+        conn.execute(text("CREATE SCHEMA IF NOT EXISTS raw;"))
     
     # Save to raw schema
     df.to_sql(
@@ -107,5 +115,5 @@ def _save_to_database(df: pd.DataFrame):
 
 
 if __name__ == "__main__":
-    df = run_full_extraction(output_to_db=False, output_to_csv=True)
+    df = run_full_extraction(output_to_db=True, output_to_csv=False)
     print(df.head())
