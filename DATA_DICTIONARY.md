@@ -51,3 +51,25 @@ This document outlines the final dimensional tables output by the `dbt` transfor
 | `p25_salary` | NUMERIC | 25th percentile (lower quartile) |
 | `median_salary` | NUMERIC | 50th percentile |
 | `p75_salary` | NUMERIC | 75th percentile (upper quartile) |
+
+## `agg_time_to_fill`
+*Cohort analysis table tracking job lifecycle and average time-to-fill metrics.*
+
+| Column Name | Data Type | Description |
+|-------------|-----------|-------------|
+| `job_category` | VARCHAR | Grouping dimension (e.g. Data Scientist) |
+| `seniority_level` | VARCHAR | Grouping dimension (e.g. Senior) |
+| `total_jobs_tracked` | INT | Total historical jobs tracked in this cohort |
+| `total_closed_jobs` | INT | Jobs that are no longer active in API pulls |
+| `avg_time_to_fill_days` | NUMERIC | Average days a job stayed active before closing |
+| `median_time_to_fill_days` | NUMERIC | Median days active before closing |
+| `currently_active_jobs` | INT | Count of jobs still active as of today |
+
+## `ml_salary_predictions`
+*Output table from the Random Forest Machine Learning pipeline.*
+
+| Column Name | Data Type | Description |
+|-------------|-----------|-------------|
+| `job_key` | VARCHAR | Foreign key to `fct_job_postings` |
+| `predicted_salary` | NUMERIC | ML-estimated salary based on title/seniority/location |
+| `prediction_date` | TIMESTAMP | When the prediction model was last run for this job |

@@ -74,7 +74,7 @@ dbt_test = BashOperator(
 )
 
 
-# Task 4: Run Great Expectations
+# Task 4: Run Data Quality
 def run_data_quality():
     import great_expectations as gx
     
@@ -93,8 +93,17 @@ quality_check = PythonOperator(
     dag=dag,
 )
 
+# Task 5: Run ML Salary Prediction
+ml_predict_task = BashOperator(
+    task_id="ml_salary_predict",
+    bash_command="""
+        python /opt/airflow/scripts/predict_salaries.py
+    """,
+    dag=dag,
+)
 
-# Task 5: Slack notification on success
+
+# Task 6: Slack notification on success
 slack_success = SlackWebhookOperator(
     task_id="slack_success",
     slack_webhook_conn_id="slack_webhook",
@@ -103,6 +112,7 @@ slack_success = SlackWebhookOperator(
         
         📊 Daily extraction complete
         🧪 All data quality checks passed
+        🤖 ML Salary Predictions computed
         📈 Dashboard updated
     """,
     dag=dag,
@@ -110,4 +120,4 @@ slack_success = SlackWebhookOperator(
 
 
 # Task dependencies
-extract_task >> dbt_run >> dbt_test >> quality_check >> slack_success
+extract_task >> dbt_run >> dbt_test >> quality_check >> ml_predict_task >> slack_success
