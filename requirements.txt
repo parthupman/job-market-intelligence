@@ -1,7 +1,7 @@
 requests==2.31.0
 tenacity==8.2.3
 pandas==2.1.1
-sqlalchemy==2.0.21
+sqlalchemy==1.4.49
 psycopg2-binary==2.9.9
 apache-airflow==2.7.2
 apache-airflow-providers-slack==8.1.0
